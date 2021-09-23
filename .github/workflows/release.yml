@@ -47,14 +47,18 @@ jobs:
 
       - name: Compile for Linux
         if: matrix.bintype == 'linux'
-        run: nimble build -d:release
+        run: |
+          nimble build -d:release
+          nimble c -d:release --app:lib --noMain neverwinter/interop/*.nim
 
       - name: Upload Linux artifact
         if: matrix.bintype == 'linux'
         uses: actions/upload-artifact@v2
         with:
           name: neverwinter.linux.amd64
-          path: bin/*
+          path: |
+            bin/*
+            neverwinter/interop/*.so
 
       - name: Compile for Windows i386
         if: matrix.bintype == 'win-i386'
@@ -62,26 +66,32 @@ jobs:
         run: |
           nimble build -d:release -d:mingw --cpu:i386
           for f in bin/*; do mv "$f" "$f.exe"; done
+          nimble c -d:release --app:lib --noMain neverwinter/interop/*.nim
 
       - name: Upload Windows i386 artifact
         if: matrix.bintype == 'win-i386'
         uses: actions/upload-artifact@v2
         with:
           name: neverwinter.windows.i386
-          path: bin/*
+          path: |
+            bin/*
+            neverwinter/interop/*.dll
 
       - name: Compile for Windows amd64
         if: matrix.bintype == 'win-amd64'
         run: |
           nimble build -d:release -d:mingw --cpu:amd64
           for f in bin/*; do mv "$f" "$f.exe"; done
+          nimble c -d:release --app:lib --noMain neverwinter/interop/*.nim
 
       - name: Upload Windows amd64 artifact
         if: matrix.bintype == 'win-amd64'
         uses: actions/upload-artifact@v2
         with:
           name: neverwinter.windows.amd64
-          path: bin/*
+          path: |
+            bin/*
+            neverwinter/interop/*.dll
 
   build-macos:
     runs-on: macos-latest
@@ -118,13 +128,17 @@ jobs:
         run: nimble install --depsOnly -y
 
       - name: Compile for macOS
-        run: nimble build -d:release
+        run: |
+          nimble build -d:release
+          nimble c -d:release --app:lib --noMain neverwinter/interop/*.nim
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v2
         with:
           name: neverwinter.macos.amd64
-          path: bin/*
+          path: |
+            bin/*
+            neverwinter/interop/*.so
 
   release:
     needs: [build-linux-win, build-macos]
